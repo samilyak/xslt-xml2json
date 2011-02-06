@@ -1,0 +1,15 @@
+Thumbs.db
+.DS_Store
+*.log
+*.pyc
+*.orig
+*.ipr
+*.iws
+*.iml
+CVS
+bak
+
+/lib
+/notes.txt
+/test/test.sh
+/test/test.cgi
