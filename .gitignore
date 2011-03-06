@@ -6,6 +6,7 @@ Thumbs.db
 *.ipr
 *.iws
 *.iml
+.idea
 CVS
 bak
 

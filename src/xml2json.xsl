@@ -2,7 +2,6 @@
 
 <!--
 	@author Alexander Samilyak (aleksam@design.ru)
-	@copyright Art. Lebedev Studio (http://www.artlebedev.ru/)
 	@date 2010-11-11
   -->
 
@@ -24,9 +23,9 @@
 	xmlns:set="http://exslt.org/sets"
 	xmlns:saxon="http://saxon.sf.net/"
 
-	xmlns:xml2json="http://www.artlebedev.com/xsl/xml2json"
-	xmlns:xml2str="http://www.artlebedev.com/xsl/xml2json/xml2string"
-	xmlns:utils="http://www.artlebedev.com/xsl/xml2json/utils"
+	xmlns:xml2json="http://localhost/xsl/xml2json"
+	xmlns:xml2str="http://localhost/xsl/xml2json/xml2string"
+	xmlns:utils="http://localhost/xsl/xml2json/utils"
 
 	extension-element-prefixes="exsl str dyn set saxon"
 	exclude-result-prefixes="xml2json xml2str utils"
