@@ -19,6 +19,9 @@
 			<glaz>123</glaz>
 		</item>
 	</file>
+	<file json-type="array">
+		<item>1</item>
+	</file>
 	dj&lt;opa
 	<file2 megaattr="us&lt;a">
 		<file>newfile</file>

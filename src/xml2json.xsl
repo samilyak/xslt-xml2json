@@ -375,6 +375,7 @@
 				или узел является одним из тех, что отдали в параметре $string_nodes,
 				то выводим его контент строкой, даже если в нём есть вложенная разметка
 			  -->
+			<xsl:when test="name() = '&CONFIG_ATTR_NAME;'"/>
 			<xsl:when test="
 				@*[name() = '&CONFIG_ATTR_NAME;'] = 'string' or
 				($string_nodes and set:has-same-node(current(), $string_nodes))
@@ -403,7 +404,10 @@
 						}
 						где item - имя каждого элемента
 					  -->
-					<xsl:when test="not(text()[normalize-space()]) and count(*) > 1 and $is_all_names_equals = 'true'">
+					<xsl:when test="
+						not(text()[normalize-space()]) and $is_all_names_equals = 'true' and
+						(count(*) > 1 or @*[name() = '&CONFIG_ATTR_NAME;'] = 'array')
+					">
 						<xsl:apply-templates select="." mode="xml2json:array_identical">
 							<xsl:with-param name="string_nodes" select="$string_nodes" />
 						</xsl:apply-templates>
@@ -710,14 +714,17 @@
 						</xsl:if>
 					</xsl:for-each>
 				</xsl:variable>
+				<xsl:variable name="set_as_string">
+					<xsl:call-template name="utils:join">
+						<xsl:with-param name="set" select="exsl:node-set($items)/item" />
+					</xsl:call-template>
+				</xsl:variable>
 
-				<xsl:call-template name="utils:join">
-					<xsl:with-param name="set" select="exsl:node-set($items)/item" />
-				</xsl:call-template>
-			</xsl:if>
+				<xsl:value-of select="$set_as_string" disable-output-escaping="yes" />
 
-			<xsl:if test="$set and normalize-space($raw_string_data)">
-				<xsl:text>,</xsl:text>
+				<xsl:if test="normalize-space($set_as_string) and normalize-space($raw_string_data)">
+					<xsl:text>,</xsl:text>
+				</xsl:if>
 			</xsl:if>
 
 			<xsl:value-of select="$raw_string_data" disable-output-escaping="yes" />

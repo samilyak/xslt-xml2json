@@ -71,28 +71,6 @@
 
 		<xsl:call-template name="xml2json">
 			<!--<xsl:with-param name="data" select="exsl:node-set($tree)/temp_tree/node()" />-->
-			<xsl:with-param name="data">
-				<products>
-					<product>
-						<title>Домашний кинотеатр LG HT-805TQ</title>
-						<short_desc json-type="string">
-							<p>Качество звука – отменное!</p>
-							<ul>
-								<li>Мощность — 850Вт</li>
-								<li>Поддерживаемые носители — CD, DVD</li>
-								<li>Выход HDMI — есть</li>
-							</ul>
-						</short_desc>
-					</product>
-					<product>
-						<title>Samsung LE-32C550J1W</title>
-						<short_desc json-type="string">
-							<p>LCD телевизор Samsung серии 5 – это предел ваших мечтаний.</p>
-						</short_desc>
-					</product>
-				</products>
-			</xsl:with-param>
-
 			<!--<xsl:with-param name="data">-->
 				<!--<xsl:for-each select="exsl:node-set($tree2)//gallery/photo">-->
 					<!--<photo>-->
@@ -106,7 +84,7 @@
 			<!--<xsl:with-param name="data" select="/descendant::file1[1] | /descendant::file[1]" />-->
 			<!--<xsl:with-param name="data" select="/descendant::file" />-->
 			<!--<xsl:with-param name="data" select="/doc" />-->
-			<!--<xsl:with-param name="data" select="/" />-->
+			<xsl:with-param name="data" select="/" />
 			<!--<xsl:with-param name="data" select="'null'" />-->
 			<!--<xsl:with-param name="data" select="true()" />-->
 			<!--<xsl:with-param name="data" select="148" />-->
