@@ -1098,12 +1098,22 @@
 		<xsl:param name="set" />
 		<xsl:param name="delimiter" select="','" />
 
-		<xsl:for-each select="$set">
-			<xsl:if test="position() != 1">
-				<xsl:value-of select="$delimiter" disable-output-escaping="yes" />
-			</xsl:if>
-			<xsl:value-of select="." disable-output-escaping="yes" />
-		</xsl:for-each>
+		<xsl:choose>
+			<!-- Saxon -->
+			<xsl:when test="function-available('xpath:string-join')">
+				<xsl:value-of select="xpath:string-join($set, $delimiter)" disable-output-escaping="yes" />
+			</xsl:when>
+
+			<!-- libxslt, Xalan -->
+			<xsl:otherwise>
+				<xsl:for-each select="$set">
+					<xsl:if test="position() != 1">
+						<xsl:value-of select="$delimiter" disable-output-escaping="yes" />
+					</xsl:if>
+					<xsl:value-of select="." disable-output-escaping="yes" />
+				</xsl:for-each>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 
 	<xsl:template name="utils:is_all_names_different">
@@ -1139,7 +1149,7 @@
 		<xsl:choose>
 			<xsl:when test="contains($str, $search)">
 				<xsl:choose>
-					<!-- Libxslt -->
+					<!-- libxslt -->
 					<xsl:when test="function-available('str:replace')">
 						<xsl:value-of
 							select="str:replace($str, $search, $replace)"
