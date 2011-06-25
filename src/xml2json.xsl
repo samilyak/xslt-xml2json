@@ -17,6 +17,7 @@
 	version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 
+	xmlns:xpath="http://www.w3.org/2005/xpath-functions"
 	xmlns:exsl="http://exslt.org/common"
 	xmlns:str="http://exslt.org/strings"
 	xmlns:dyn="http://exslt.org/dynamic"
@@ -27,7 +28,7 @@
 	xmlns:xml2str="http://localhost/xsl/xml2json/xml2string"
 	xmlns:utils="http://localhost/xsl/xml2json/utils"
 
-	extension-element-prefixes="exsl str dyn set saxon"
+	extension-element-prefixes="xpath exsl str dyn set saxon"
 	exclude-result-prefixes="xml2json xml2str utils"
 >
 
@@ -371,11 +372,14 @@
 
 		<xsl:choose>
 			<!--
-				Если есть атрибут, отвечающий за тип json-данных (json-type), значение которого "string",
+				Атрибут, отвечающий за тип json-данных (json-type), считаем служебным и его выводить не надо.
+			  -->
+			<xsl:when test="name() = '&CONFIG_ATTR_NAME;'"/>
+			<!--
+				Если у текущего узла есть атрибут json-type, значение которого "string",
 				или узел является одним из тех, что отдали в параметре $string_nodes,
 				то выводим его контент строкой, даже если в нём есть вложенная разметка
 			  -->
-			<xsl:when test="name() = '&CONFIG_ATTR_NAME;'"/>
 			<xsl:when test="
 				@*[name() = '&CONFIG_ATTR_NAME;'] = 'string' or
 				($string_nodes and set:has-same-node(current(), $string_nodes))
@@ -1096,7 +1100,7 @@
 
 		<xsl:for-each select="$set">
 			<xsl:if test="position() != 1">
-				<xsl:value-of select="$delimiter" />
+				<xsl:value-of select="$delimiter" disable-output-escaping="yes" />
 			</xsl:if>
 			<xsl:value-of select="." disable-output-escaping="yes" />
 		</xsl:for-each>
@@ -1131,38 +1135,78 @@
 		<xsl:param name="str" />
 		<xsl:param name="search" />
 		<xsl:param name="replace" select="''" />
-		<xsl:param name="is_try_to_optimize" select="true()" />
 
 		<xsl:choose>
 			<xsl:when test="contains($str, $search)">
 				<xsl:choose>
 					<!-- Libxslt -->
-					<xsl:when test="$is_try_to_optimize and function-available('str:replace')">
-						<xsl:value-of select="str:replace($str, $search, $replace)" />
+					<xsl:when test="function-available('str:replace')">
+						<xsl:value-of
+							select="str:replace($str, $search, $replace)"
+							disable-output-escaping="yes"
+						/>
 					</xsl:when>
-					
-					<!--
-						Xalan & Saxon
-						(в Saxon'е есть свой replace из XPath 2.0, но он здесь неудобен, потому что принимает регулярку,
-						из-за чего в $search придётся сначала экранировать служебные символы регулярок).
-					  -->
-					<xsl:otherwise>
+
+					<!-- Xalan -->
+					<xsl:when test="function-available('str:split')">
+						<xsl:call-template name="utils:join">
+							<xsl:with-param name="set" select="str:split($str, $search)" />
+							<xsl:with-param name="delimiter" select="$replace" />
+						</xsl:call-template>
 						<!--
-							Делаем старинным способом - рекурсией
-						  -->
-						<xsl:value-of select="substring-before($str, $search)" />
-						<xsl:value-of select="$replace" />
+							If $str ends with $search, we have to append $replace, because in Xalan
+								str:split('one|two|', '|') =>
+								<token>one</token><token>two</token>
+							But if $str STARTS with $search we DON'T have to prepend $replace, because in Xalan
+								str:split('|one|two', '|') =>
+								<token></token><token>one</token><token>two</token>
+							Weird, right?
+							-->
+						<xsl:if test="substring($str, string-length($str) - string-length($search) + 1) = $search">
+							<xsl:value-of select="$replace" disable-output-escaping="yes" />
+						</xsl:if>
+					</xsl:when>
+
+					<!--
+						Saxon.
+						Here we have XPath 2.0 replace function which accepts RegEx patterns (not simple strings)
+						as search- and replace-parameters.
+						It means that we have to escape \ char (regex special char) in search- and replace-parameters
+						with additional \ char.
+						-->
+					<xsl:when test="function-available('xpath:replace')">
+						<xsl:value-of
+							select="xpath:replace(
+								$str,
+								xpath:replace($search, '\\', '\\\\'),
+								xpath:replace($replace, '\\', '\\\\')
+							)"
+							disable-output-escaping="yes"
+						/>
+					</xsl:when>
+
+					<!--
+						Old school - recursion method, for any other XSLT 1.0 processors.
+						=== WARNING ===
+						All XSLT processors have protection system from infinite recursions.
+						If self-calling depth of some template would be more than some constant (normally about 3000),
+						processor throw an exception.
+						That's why proper work of this replace method is not guaranteed
+						if you deal with really long strings containing a lot of $replace chars.
+						-->
+					<xsl:otherwise>
+						<xsl:value-of select="substring-before($str, $search)" disable-output-escaping="yes" />
+						<xsl:value-of select="$replace" disable-output-escaping="yes" />
 						<xsl:call-template name="utils:str_replace">
 							<xsl:with-param name="str" select="substring-after($str, $search)" />
 							<xsl:with-param name="search" select="$search" />
 							<xsl:with-param name="replace" select="$replace" />
-							<xsl:with-param name="is_try_to_optimize" select="false()" />
 						</xsl:call-template>
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:value-of select="$str" />
+				<xsl:value-of select="$str" disable-output-escaping="yes" />
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
