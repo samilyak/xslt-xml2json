@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!DOCTYPE xsl:stylesheet SYSTEM "entities.dtd">
+<!DOCTYPE xsl:stylesheet[
+  <!ENTITY % ent SYSTEM "entities.dtd">
+  %ent;
+]>
 
 <xsl:stylesheet
 	version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:exsl="http://exslt.org/common"
-	xmlns:als="http://design.ru/"
+	xmlns:ns="http://localhost/"
 	extension-element-prefixes="exsl"
-	exclude-result-prefixes="als"
+	exclude-result-prefixes="ns"
 >
 
+	<!--<xsl:import href="../build/xml2json.xsl" />-->
 	<xsl:import href="../src/xml2json.xsl" />
 	<!--<xsl:import href="../lib/xmltojsonv1.xsl" />-->
 
@@ -43,11 +47,11 @@
 						<!--<input> &nbsp;</input>-->
 						<input value="mmm123"/>
 						<item fuck="t'he&lt; war" />
-						<als:item>
+						<ns:item>
 							<xsl:value-of select="'&lt;![CDATA['" disable-output-escaping="yes" />
 							    <xsl:copy-of select="$tmp" />
 							<xsl:value-of select="']]&gt;'" disable-output-escaping="yes" />
-						</als:item>
+						</ns:item>
 					</file>
 					dj&lt;opa
 					<file2 megaattr="us&lt;a" super="187">
