@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
-
 <!ENTITY ATTR_VALUE_QUOTE       "&quot;">
 <!ENTITY JSON_STRING_QUOTE      "&quot;">
 <!ENTITY ATTR_KEY_PREFIX        "$">
