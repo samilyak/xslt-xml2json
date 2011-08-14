@@ -10,6 +10,8 @@ Thumbs.db
 CVS
 bak
 
+/target
+
 /notes.txt
 /test/test.sh
 /test/test.cgi
