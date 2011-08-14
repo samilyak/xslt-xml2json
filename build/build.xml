@@ -2,6 +2,10 @@
 <!--
 	@author Alexander Samilyak (aleksam241@gmail.com)
 	@date 8/13/11
+	@info Running test target requires the Saxon XSLT processor in classpath.
+	Saxon jar is bundled in lib/saxon directory.
+	So you can simply use -lib argument of 'ant' command:
+	ant -lib "../lib/saxon"
 
 	This source code follows Formatting section of Google C++ Style Guide
   http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Formatting
@@ -12,10 +16,14 @@
   <property name="src.dir" location="../src" />
   <property name="lib.dir" location="../lib" />
   <property name="target.dir" location="../target" />
+  <property name="test-src.dir" location="../test" />
+
+
+  <target name="main" depends="test, build" />
 
 
   <target
-    name="main"
+    name="build"
     description="Concatenate all source XSL files at one result file"
   >
     <mkdir dir="${target.dir}/main" />
@@ -32,6 +40,20 @@
     </java>
 
     <echo message="Build result is saved to ${out.file}" />
+  </target>
+
+
+  <taskdef
+    name="xslttest"
+    classname="com.jenitennison.xslt.unittest.XSLTTest"
+    classpath="${lib.dir}/tennison-xslttest/ant-xslttest-1.0.0.jar"
+  />
+
+  <target name="test">
+    <xslttest src="${lib.dir}/tennison-xslttest" target="${target.dir}/test">
+      <fileset dir="${test-src.dir}" includes="*suite.xml" />
+      <factory name="net.sf.saxon.TransformerFactoryImpl" />
+    </xslttest>
   </target>
 
 
