@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+	@author Alexander Samilyak (aleksam241@gmail.com)
+	@date 8/13/11
+
+	This source code follows Formatting section of Google C++ Style Guide
+  http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Formatting
+  -->
+
+<project name="xml2json XSL library builder" default="main">
+
+  <property name="src.dir" location="../src" />
+  <property name="lib.dir" location="../lib" />
+  <property name="target.dir" location="../target" />
+
+
+  <target
+    name="main"
+    description="Concatenate all source XSL files at one result file"
+  >
+    <mkdir dir="${target.dir}/main" />
+
+    <property name="out.file" location="${target.dir}/main/xml2json.xsl" />
+
+    <java
+      jar="${lib.dir}/saxon/saxon-9.1.0.8.jar" failonerror="true" fork="true"
+    >
+      <arg line="-versionmsg:off" />
+      <arg line="-o ${out.file}" />
+      <arg line="-s ${src.dir}/xml2json.xsl" />
+      <arg line="-xsl builder.xsl" />
+    </java>
+
+    <echo message="Build result is saved to ${out.file}" />
+  </target>
+
+
+  <target name="clean">
+    <delete dir="${target.dir}" />
+  </target>
+
+</project>
