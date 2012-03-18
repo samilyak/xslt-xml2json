@@ -319,9 +319,19 @@
             not(text()[normalize-space()]) and $is_all_names_equals = 'true' and
             (count(*) > 1 or @*[name() = '&CONFIG_ATTR_NAME;'] = 'array')
           ">
-            <xsl:apply-templates select="." mode="core:array_identical">
-              <xsl:with-param name="string_nodes" select="$string_nodes" />
-            </xsl:apply-templates>
+            <xsl:choose>
+              <xsl:when test="@*[name() = '&CONFIG_ATTR_NAME;'] = 'array'">
+                <xsl:apply-templates select="." mode="core:array_identical">
+                  <xsl:with-param name="string_nodes" select="$string_nodes" />
+                  <xsl:with-param name="skip_root" select="true()" />
+                </xsl:apply-templates>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:apply-templates select="." mode="core:array_identical">
+                  <xsl:with-param name="string_nodes" select="$string_nodes" />
+                </xsl:apply-templates>
+              </xsl:otherwise>
+            </xsl:choose>
           </xsl:when>
           <xsl:otherwise>
             <xsl:variable name="is_all_names_different">
@@ -425,11 +435,15 @@
     -->
   <xsl:template match="*" mode="core:array_identical">
     <xsl:param name="string_nodes" />
+    <xsl:param name="skip_root" select="false()" />
 
     <xsl:call-template name="core:make_array_identical">
       <xsl:with-param name="set" select="*" />
-      <xsl:with-param name="extraset" select="@*" />
+      <xsl:with-param
+        name="extraset" select="@*[name() != '&CONFIG_ATTR_NAME;']"
+      />
       <xsl:with-param name="string_nodes" select="$string_nodes" />
+      <xsl:with-param name="skip_root" select="$skip_root" />
     </xsl:call-template>
   </xsl:template>
 
