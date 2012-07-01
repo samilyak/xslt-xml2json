@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  @fileoverview Some low-level utils, such as cross-processor string replace
+  @fileoverview Low level utils (such as cross processor string replace)
   @author Alexander Samilyak (aleksam241@gmail.com)
 
   This source code follows Formatting section of Google C++ Style Guide
@@ -17,6 +17,16 @@
   exclude-result-prefixes="utils"
 >
 
+
+  <!--
+    Performs good old string replace (not the same as translate(),
+    because we have 1-to-1 symbol substitution there).
+
+    @param {string} str
+    @param {string} search
+    @param {string=} replace  Defaults to empty string.
+    @return {string}
+  -->
   <xsl:template name="utils:str_replace">
     <xsl:param name="str" />
     <xsl:param name="search" />
@@ -25,6 +35,7 @@
     <xsl:choose>
       <xsl:when test="contains($str, $search)">
         <xsl:choose>
+
           <!-- libxslt -->
           <xsl:when test="function-available('str:replace')">
             <xsl:value-of
@@ -33,21 +44,29 @@
             />
           </xsl:when>
 
-          <!-- Xalan -->
+          <!--
+            Xalan.
+            Use hack where splitting string by $search and then joining with
+            $replace as a delimiter.
+          -->
           <xsl:when test="function-available('str:split')">
             <xsl:call-template name="utils:join">
               <xsl:with-param name="set" select="str:split($str, $search)" />
               <xsl:with-param name="delimiter" select="$replace" />
             </xsl:call-template>
+
+
             <!--
-              If $str ends with $search,
-              we have to append $replace, because in Xalan
-                str:split('one|two|', '|') =>
-                <token>one</token><token>two</token>
-              But if $str STARTS with $search,
-              we DON'T have to prepend $replace, because in Xalan
-                str:split('|one|two', '|') =>
-                <token></token><token>one</token><token>two</token>
+              Xalan's behaviour:
+              str:split('one|two|', '|') =>
+              <token>one</token><token>two</token>
+
+              Meanwhile:
+              str:split('|one|two', '|') =>
+              <token></token><token>one</token><token>two</token>
+
+              We do have to append $replace if $str ends with $search.
+              We don't have to prepend $replace, if $str starts with $search.
               Weird, right?
               -->
             <xsl:if test="
@@ -63,12 +82,10 @@
 
           <!--
             Saxon.
-            Here we have XPath 2.0 replace function
-            which accepts RegEx patterns (not simple strings)
-            as search- and replace-parameters.
-            It means that we have to escape \ char(regex special char)
-            in search- and replace-parameters
-            with additional \ char.
+            Here we have XPath 2.0 replace function that accepts RegEx patterns
+            (not simple strings) as search and replace parameters.
+            It means that we have to escape \ symbol (regex special symbol)
+            in search and replace parameters with additional \ symbol.
             -->
           <xsl:when test="function-available('xpath:replace')">
             <xsl:value-of
@@ -82,16 +99,15 @@
           </xsl:when>
 
           <!--
-            Old school - recursion method, for any other XSLT 1.0 processors.
+            Old school fallback - recursion.
 
             === WARNING ===
-            All XSLT processors have protection system from infinite recursions.
-            If self-calling depth of some template
-            would be more than some constant (normally about 3000),
-            processor throw an exception.
+            All XSLT processors have protection system from infinite recursion.
+            If self-calling depth of some template becomes more than some
+            constant (normally about 3000), processor throws an exception.
             That's why proper work of this replace method is not guaranteed
-            if you deal with really long strings
-            containing a lot of $replace chars.
+            if you deal with really long strings containing a lot of $replace
+            symbols.
             -->
           <xsl:otherwise>
             <xsl:value-of
@@ -109,18 +125,27 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
+
       <xsl:otherwise>
         <xsl:value-of select="$str" disable-output-escaping="yes" />
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
   
-  
+
+  <!--
+    Joins nodes of $set to one string using $delimiter
+
+    @param {Nodeset} set
+    @param {string=} delimiter  Defaults to comma ','
+    @return {string}
+  -->
   <xsl:template name="utils:join">
     <xsl:param name="set" />
     <xsl:param name="delimiter" select="','" />
 
     <xsl:choose>
+
       <!-- Saxon -->
       <xsl:when test="function-available('xpath:string-join')">
         <xsl:value-of
@@ -141,6 +166,13 @@
     </xsl:choose>
   </xsl:template>
 
+
+  <!--
+    Checks if all nodes in $set have distinct names
+
+    @param {Nodeset} set
+    @return {boolean}  String 'true' or 'false'.
+    -->
   <xsl:template name="utils:is_all_names_different">
     <xsl:param name="set" />
 
@@ -156,6 +188,13 @@
     </xsl:choose>
   </xsl:template>
 
+
+  <!--
+    Checks if all nodes in $set have same names
+
+    @param {Nodeset} set
+    @return {boolean}  String 'true' or 'false'.
+    -->
   <xsl:template name="utils:is_all_names_equals">
     <xsl:param name="set" />
 
@@ -164,5 +203,6 @@
       <xsl:otherwise>true</xsl:otherwise>
     </xsl:choose>
   </xsl:template>
+
 
 </xsl:stylesheet>

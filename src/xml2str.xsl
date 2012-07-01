@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  @fileoverview Converts XML to json string that contains that XML.
+  @fileoverview Templates for converting XML to json string containing that XML.
   The main goal is to convert HTML to json strings.
   @author Alexander Samilyak (aleksam241@gmail.com)
 
@@ -25,7 +25,10 @@
 
   <xsl:import href="utils.xsl" />
 
-  <xsl:variable name="xml2str:empty_tags">
+  <!--
+    All HTML4 self closed empty tags.
+    -->
+  <xsl:variable name="xml2str:empty_html_tags_rtf">
     <area />
     <base />
     <basefont />
@@ -42,11 +45,16 @@
   </xsl:variable>
 
   <xsl:variable
-    name="xml2str:empty_tags_set" select="exsl:node-set($xml2str:empty_tags)/*"
+    name="xml2str:empty_html_tags"
+    select="exsl:node-set($xml2str:empty_html_tags_rtf)/*"
   />
 
+
   <!--
-    Превращает контент отданного узла (включая все элементы) в строку
+    Converts context node content to string (including child elements).
+    This is recursive conversion.
+
+    @return {string}
     -->
   <xsl:template match="*" mode="xml2str:convert">
     <xsl:text>&lt;</xsl:text>
@@ -55,18 +63,18 @@
 
     <xsl:choose>
       <!--
-        Если имя тэга находится в списке html-тэгов,
-        которые должны быть самозакрыты, и если внутри тэга пусто,
-        то выводим самозакрытый тэг
+        Print self closed tag (<tag />) if the name
+        is in $xml2str:empty_html_tags and the element is empty.
         -->
       <xsl:when test="
-        $xml2str:empty_tags_set[name() = name(current())] and
+        $xml2str:empty_html_tags[name() = name(current())] and
         not(node())
       ">
         <xsl:text>/&gt;</xsl:text>
       </xsl:when>
+
       <!--
-        Иначе выводим и открывающий, и закрывающий тэг
+        Print closing tag otherwise (<tag>possible content</tag>).
         -->
       <xsl:otherwise>
         <xsl:text>&gt;</xsl:text>
@@ -80,11 +88,13 @@
     </xsl:choose>
   </xsl:template>
 
+
   <xsl:template match="@* | text()" mode="xml2str:convert">
     <xsl:call-template name="xml2str:escape">
       <xsl:with-param name="str" select="." />
     </xsl:call-template>
   </xsl:template>
+
 
   <xsl:template match="*" mode="xml2str:convert_attrs">
     <xsl:for-each select="@*">
@@ -100,22 +110,30 @@
   </xsl:template>
 
 
+  <!--
+    Escapes xml special symbols '&', '<', ']]>'.
+
+    Suppose we need to print string 'Procter&Gamble' wrapped with <p>.
+    Then we should write in input xml:
+    <p>Procter&amp;Gamble</p>
+
+    But here in xsl we'll have that xml as:
+    <p>Procter&Gamble</p>
+    (&amp; was substitued with &)
+
+    We can't print it as is because this is invalid xml.
+    So we have to escape xml special symbols:
+      &  => &amp;
+      <  => &lt;
+      ]]> => ]]&gt;
+
+
+    @param {string=} str
+    @return {string}
+  -->
   <xsl:template name="xml2str:escape">
     <xsl:param name="str" select="''" />
 
-    <!--
-      Представим, что нужно вывести строку "Procter&Gamble" в html-абзаце p.
-      Для этого в исходном xml'е надо написать
-      <p>Procter&amp;Gamble</p>
-      А сюда в xsl это приходит как
-      <p>Procter&Gamble</p>.
-      В таком виде это нельзя выводить, потому что это невалидный xml
-      (& должен быть написан как &amp;).
-      Чтобы сохранить валидность, экранируем служебные символы
-      &    ==>   &amp;
-      <    ==>   &lt;
-      ]]>  ==>   ]]&gt;
-      -->
     <xsl:variable name="step1">
       <xsl:call-template name="utils:str_replace">
         <xsl:with-param name="str" select="$str" />
@@ -141,13 +159,17 @@
     <xsl:copy-of select="$step3" />
   </xsl:template>
 
+
+  <!--
+    Escapes single and double quote for attribute values (apart from regular xml
+    escaping by name="xml2str:escape", it's called internally).
+
+    @param {string=} str
+    @return {string}
+  -->
   <xsl:template name="xml2str:escape_attr">
     <xsl:param name="str" select="''" />
 
-    <!--
-      В значениях атрибутов, кроме обычного html-экранирования,
-      нужно ещё заэкранировать двойную и одинарную кавычки
-      -->
     <xsl:variable name="str_common_escaped">
       <xsl:call-template name="xml2str:escape">
         <xsl:with-param name="str" select="$str" />
@@ -171,5 +193,6 @@
 
     <xsl:copy-of select="$step2" />
   </xsl:template>
+
 
 </xsl:stylesheet>

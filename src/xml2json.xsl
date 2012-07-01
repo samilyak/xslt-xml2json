@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   @fileoverview XSLT 1.0 based XML to JSON converter.
-      Tested with these XSLT processors:
-        libxslt 1.1
-        Xalan-Java 2.7.1
-        Saxon-Java 9.1.0.8
+  Tested with XSLT processors:
+    - libxslt 1.1
+    - Xalan-Java 2.7.1
+    - Saxon-Java 9.1.0.8
+  This file contains converter's public API.
+
   @author Alexander Samilyak (aleksam241@gmail.com)
-  @version 0.1
-  @link https://github.com/samilyak/xslt-xml2json
+  @see https://github.com/samilyak/xslt-xml2json
 
   This source code follows Formatting section of Google C++ Style Guide
   http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Formatting
@@ -31,59 +32,62 @@
   <xsl:output omit-xml-declaration="yes" indent="no" />
 
   <!--
-    @description Превращет xml в json
-    @param {Nodeset|RTF} [data = .]  Набор узлов, подлежащих превращению в json
-    @param {Nodeset|String} [string_elems = ''] Узлы,
-        содержимое которых должно быть превращено в json-строку,
-        даже если внутри есть узлы-элементы.
-        Можно передавать как набор узлов, так и XPath-строку для их вычисления
-        (контекстом исполнения XPath-строки будет дерево,
-        в котором находится первый узел параметра $data)
+    Converts xml to json.
 
-        Этот параметр удобно использовать,
-        когда в json'е нужно передать html-разметку как строку.
-        Например:
-        <xsl:call-template name="xml2json">
-          <xsl:with-param name="data">
-            <article>
-              <content>
-                <p><strong>Lorem ipsum</strong> dolor sit amet</p>
-              </content>
-            </article>
-          </xsl:with-param>
-          <xsl:with-param name="string_elems" select="'/article/content'" />
-        </xsl:call-template>
+    @param {Nodeset|RTF=} Xml that should be converted to json.
+    Default to current node.
 
-        ====>
+    @param {Nodeset|string=} Nodes that should be converted to json-string
+    no matter what's the content of these nodes.
+    If you pass a string it's treated as an XPath expression to evaluate
+    desired nodes. Context node for this evaluation is a root of the tree
+    containing first node of $data nodeset.
+    Defaults to empty string.
 
-        {
-          article : {
-            content : "<p><strong>Lorem ipsum</strong> dolor sit amet</p>"
-          }
-        }
+    This parameter is useful when you have xml containing html and you want
+    to convert this html to json string. For example:
 
-    @param {Boolean} [skip_root = false()] Убрать ли корень результирующего
-        json-объекта и отдать лишь содержимое его ключа.
-        Параметр имеет смысл, если в первом параметре $data
-        на обработку отдан один xml-узел
-        (на выходе получаем json-объект с одним ключом)
-        или набор xml-узлов с одним и тем же именем
-        (на выходе получаем json-массив).
+    <xsl:call-template name="xml2json">
+      <xsl:with-param name="data">
+        <article>
+          <content>
+            <p><strong>Lorem ipsum</strong> dolor sit amet</p>
+          </content>
+        </article>
+      </xsl:with-param>
+      <xsl:with-param name="string_elems" select="'/article/content'" />
+    </xsl:call-template>
 
-        <xsl:call-template name="xml2json">
-          <xsl:with-param name="data">
-            <article>
-              <content>Lorem ipsum dolor sit amet</content>
-            </article>
-          </xsl:with-param>
-          <xsl:with-param name="skip_root" select="true()" />
-        </xsl:call-template>
+    ==>
 
-        ====>
+    {
+      article : {
+        content : "<p><strong>Lorem ipsum</strong> dolor sit amet</p>"
+      }
+    }
 
-        { content: "Lorem ipsum dolor sit amet" }
+    @param {boolean=} Should we skip the root of the result json object
+    and therefore print value of the this object's single key.
+    This parameter is useful when $data is 1 node or nodeset of elements that
+    have the same name. Defaults to false().
+    For example:
 
-        (обёрточного ключа article нет)
+    <xsl:call-template name="xml2json">
+      <xsl:with-param name="data">
+        <article>
+          <content>Lorem ipsum dolor sit amet</content>
+        </article>
+      </xsl:with-param>
+      <xsl:with-param name="skip_root" select="true()" />
+    </xsl:call-template>
+
+    ==>
+
+    { content: "Lorem ipsum dolor sit amet" }
+
+    (there is no 1st level 'article' key).
+
+    @return {string}
     -->
   <xsl:template name="xml2json">
     <xsl:param name="data" select="." />
@@ -99,10 +103,11 @@
 
 
   <!--
-    @description Превращет xml в json и отдаёт html-атрибут, содержащий этот
-    json.
+    Converts xml to json and saves it to html attribute.
+    This template is using template name="xml2json" internally
+    (check its parameters reference).
 
-    Пример 1 (атрибут onclick):
+    Example #1 ('onclick' attribute):
 
     <xsl:call-template name="xml2json_attr">
       <xsl:with-param name="data">
@@ -112,13 +117,13 @@
       </xsl:with-param>
     </xsl:call-template>
 
-    =>
+    ==>
 
     onclick='return {"article":{"content":"Lorem ipsum"}}'
 
     ========================================================
 
-    Пример 2 (атрибут начинается с data-):
+    Example #2 (attribute starting with 'data-', e.g. 'data-content'):
 
     <xsl:call-template name="xml2json_attr">
       <xsl:with-param name="attr" select="'data-data'" />
@@ -131,24 +136,26 @@
       <xsl:with-param name="skip_root" select="true()" />
     </xsl:call-template>
 
-    =>
+    ==>
 
     data-data="&lt;elem width=&quot;640&quot; src=&quot;http://www.google.com/&quot;/&gt;"
 
 
-    @param {Nodeset|RTF} [data = .]  Набор узлов, подлежащих превращению в json
+    @param {Nodeset|RTF=} Xml that should be converted to json.
+    Default to current node.
+    @param {Nodeset|string=} Nodes that should be converted to json-string
+    no matter what's the content of these nodes. Defaults to empty string.
+    @param {boolean=} Should we skip the root of the result json object.
+    Defaults to false.
+    @param {string=} Html attribute name that is used to save result json.
+    We'll print 'return ' in front of result json if attribute name doesn't
+    start with 'data-' (prefix data).
+    If attribute name does start with 'data-' and result json is a string then
+    this string won't be surrounded with json quotes and won't be json escaped
+    (see Example #2 above).
+    Defaults to 'onclick'.
 
-    @param {Nodeset|String} [string_elems = '']  Узлы, содержимое которых
-    должно быть превращено в json-строку, даже если внутри есть узлы-элементы.
-
-    @param {Boolean} [skip_root = false()]  Убрать ли корень результирующего
-    json-объекта и отдать лишь содержимое его ключа.
-
-    @param {String} [attr = "onclick"] Имя html-атрибута, в который нужно
-    положить получившийся json. Если имя начинается с 'data-', то в значении
-    атрибута не будет 'return ' в начале, а будет только сам json.
-    При этом если json является строкой, то эта строка не будет заключена
-    в кавычки и не будет иметь json-экранирования (см. пример 2 выше).
+    @return {string}
   -->
   <xsl:template name="xml2json_attr">
     <xsl:param name="data" select="." />
