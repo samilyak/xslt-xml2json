@@ -913,4 +913,34 @@
     <xsl:value-of select="$step5" disable-output-escaping="yes" />
   </xsl:template>
 
+
+  <!--
+    json unescaping:
+      \\  =>  \
+      \"  =>  "
+
+    @param {string} str
+    -->
+  <xsl:template name="core:string_unescape">
+    <xsl:param name="str" />
+
+    <xsl:variable name="step1">
+      <xsl:call-template name="utils:str_replace">
+        <xsl:with-param name="str" select="$str" />
+        <xsl:with-param name="search" select="'\&quot;'" />
+        <xsl:with-param name="replace" select="'&quot;'" />
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="step2">
+      <xsl:call-template name="utils:str_replace">
+        <xsl:with-param name="str" select="$step1" />
+        <xsl:with-param name="search" select="'\\'" />
+        <xsl:with-param name="replace" select="'\'" />
+      </xsl:call-template>
+    </xsl:variable>
+
+    <xsl:value-of select="$step2" disable-output-escaping="yes" />
+  </xsl:template>
+
+
 </xsl:stylesheet>
