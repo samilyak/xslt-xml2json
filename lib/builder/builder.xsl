@@ -13,7 +13,8 @@
   -->
 
 <!DOCTYPE xsl:stylesheet [
-	<!ENTITY SRC_DIR    "../src">
+	<!ENTITY SRC_DIR    "../../src">
+  <!ENTITY INFO_FILE  "info.xml">
 ]>
 
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -68,7 +69,7 @@
   <xsl:template name="builder:info">
     <xsl:text>&#xA;</xsl:text>
     <xsl:comment>
-      <xsl:value-of select="document('info.xml')/info" />
+      <xsl:value-of select="document('&INFO_FILE;')/info" />
 
       <xsl:text>&#xA;This file is generated automatically. </xsl:text>
       <xsl:text>Please, DO NOT EDIT.&#xA;</xsl:text>

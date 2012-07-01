@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <info>
 @fileoverview XSLT 1.0 based XML to JSON converter.
-Tested with these XSLT processors:
-  libxslt 1.1
-  Xalan-Java 2.7.1
-  Saxon-Java 9.1.0.8
+Tested with XSLT processors:
+  - libxslt 1.1
+  - Xalan-Java 2.7.1
+  - Saxon-Java 9.1.0.8
 @author Alexander Samilyak (aleksam241@gmail.com)
-@version 0.1
-@link https://github.com/samilyak/xslt-xml2json
+@see https://github.com/samilyak/xslt-xml2json
 </info>

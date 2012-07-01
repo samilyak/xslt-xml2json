@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-	@author Alexander Samilyak (aleksam241@gmail.com)
-	@date 8/13/11
-	@info Running test target requires the Saxon XSLT processor in classpath.
+  This ant script allows to build sources to produce 1 xsl file
+  and to test sources.
+
+  Running 'test' target requires Saxon XSLT processor in classpath.
 	Saxon jar is bundled in lib/saxon directory.
 	So you can simply use -lib argument of 'ant' command:
 	ant -lib "../lib/saxon"
+
+	@author Alexander Samilyak (aleksam241@gmail.com)
 
 	This source code follows Formatting section of Google C++ Style Guide
   http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Formatting
@@ -36,7 +39,7 @@
       <arg line="-versionmsg:off" />
       <arg line="-o ${out.file}" />
       <arg line="-s ${src.dir}/xml2json.xsl" />
-      <arg line="-xsl builder.xsl" />
+      <arg line="-xsl ${lib.dir}/builder/builder.xsl" />
     </java>
 
     <echo message="Build result is saved to ${out.file}" />
@@ -51,7 +54,7 @@
 
   <target name="test">
     <xslttest src="${lib.dir}/tennison-xslttest" target="${target.dir}/test">
-      <fileset dir="${test-src.dir}" includes="*suite.xml" />
+      <fileset dir="${test-src.dir}" includes="**/*testsuite.xml" />
       <factory name="net.sf.saxon.TransformerFactoryImpl" />
     </xslttest>
   </target>
