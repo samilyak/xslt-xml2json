@@ -910,7 +910,7 @@
         <xsl:text>null</xsl:text>
       </xsl:when>
       <xsl:when test="string(number($string_data)) != 'NaN'">
-        <xsl:value-of select="normalize-space($string_data)" />
+        <xsl:value-of select="number($string_data)" />
       </xsl:when>
       <xsl:when test="translate($string_data, 'TRUE', 'true') = 'true'">
         <xsl:text>true</xsl:text>
